@@ -27,14 +27,42 @@ class Eva {
             return this.eval(exp[1], env) * this.eval(exp[2], env);
         }
 
+        if (exp[0] === "-"){
+            return this.eval(exp[1], env) - this.eval(exp[2], env);
+        }
+
+        if (exp[0] === "/"){
+            return this.eval(exp[1], env) / this.eval(exp[2], env);
+        }
+
+        // -----------------------------
+        // compare operations
+        if (exp[0] === ">"){
+            return this.eval(exp[1], env) > this.eval(exp[2], env);
+        }
+
+        if (exp[0] === ">="){
+            return this.eval(exp[1], env) >= this.eval(exp[2], env);
+        }
+
+        if (exp[0] === "<"){
+            return this.eval(exp[1], env) < this.eval(exp[2], env);
+        }
+
+        if (exp[0] === "<="){
+            return this.eval(exp[1], env) <= this.eval(exp[2], env);
+        }
+
+        if (exp[0] === "=="){
+            return this.eval(exp[1], env) == this.eval(exp[2], env);
+        }
+
         // -----------------------------
         // block expressions
         if (exp[0] === "begin"){
             const blockEnv = new Environment({}, env);
             return this._evalBlock(exp, blockEnv);
         }
-
-
 
         // -----------------------------
         // variables declration
@@ -51,6 +79,16 @@ class Eva {
         // variables lookup
         if (isVariableName(exp)){
             return env.lookup(exp);
+        }
+
+        if (exp[0] === "if"){
+            const [_tag, condition, consequent, alternate] = exp;
+            if(this.eval(condition, env)){
+                return this.eval(consequent, env);
+            }
+            else{
+                return this.eval(alternate, env);
+            }
         }
 
         throw `Umimplemented: ${JSON.stringify(exp)}`
