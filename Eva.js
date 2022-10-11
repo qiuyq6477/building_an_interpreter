@@ -59,22 +59,50 @@ class Eva {
             return result;
         }
 
+        if (exp[0] === "def"){
+            const [_tag, name, param, body] = exp
+
+            const fn = {
+                param: param,
+                body: body,
+                env: env,
+            };
+
+            return env.define(name, fn);
+        }
+
         if (Array.isArray(exp)){
             const fn = this.eval(exp[0], env);
             const args = exp
                     .slice(1)
                     .map(arg => this.eval(arg, env));
-            let result;
+                        
+            // natived function
             if (typeof fn === "function"){
-                result = fn(...args);
+                return fn(...args);
             }
             
+            // user-defined-function
+            const activationRecord = {};
 
-            return result;
+            fn.param.forEach((param, index) => {
+                activationRecord[param] = args[index];
+            })
+
+            const activationEnv = new Environment(activationRecord, fn.env); // static scope, if env then dynamic scope
+
+            return this._evalBody(fn.body, activationEnv);
         }
 
 
         throw `Umimplemented: ${JSON.stringify(exp)}`
+    }
+
+    _evalBody(body, env){
+        if (body[0] === "begin"){ // prevent create another env
+            return this._evalBlock(body, env);
+        }
+        return this.eval(body, env);
     }
 
     _evalBlock(block, env){

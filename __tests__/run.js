@@ -10,7 +10,7 @@ const tests = [
     require('./if_test'),
     require('./while_test'),
     require('./native_function_test'),
-
+    require("./user_defined_function_test")
 ];
 
 
