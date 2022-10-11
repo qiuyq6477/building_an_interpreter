@@ -91,6 +91,15 @@ class Eva {
             }
         }
 
+        if (exp[0] === "while"){
+            const [_tag, condition, body] = exp;
+            let result;
+            while(this.eval(condition, env)){
+                result = this.eval(body, env)
+            }
+            return result;
+        }
+
         throw `Umimplemented: ${JSON.stringify(exp)}`
     }
 

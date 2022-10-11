@@ -7,6 +7,8 @@ const tests = [
     require("./variables_test"),
     require("./math_test"),
     require('./blocks_test'),
+    require('./if_test'),
+    require('./while_test'),
 ];
 
 
