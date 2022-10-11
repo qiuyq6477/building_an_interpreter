@@ -9,19 +9,12 @@ const tests = [
     require('./blocks_test'),
     require('./if_test'),
     require('./while_test'),
+    require('./native_function_test'),
+
 ];
 
 
-
-const env = new Environment({
-    null: null,
-
-    true: true,
-    false: false,
-
-    VERSION: '0.1',
-});
-const eva = new Eva(env);
+const eva = new Eva();
 
 tests.forEach(test => test(eva));
 

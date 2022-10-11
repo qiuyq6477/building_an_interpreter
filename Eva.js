@@ -1,7 +1,7 @@
 
 const Environment = require("./Environment")
 class Eva {
-    constructor(global = new Environment()){
+    constructor(global = globalEnv){
         this.global = global;
     }
     eval(exp, env = this.global){
@@ -14,47 +14,6 @@ class Eva {
         
         if (isString(exp)){
             return exp.slice(1,-1);
-        }
-
-        // -----------------------------
-        // math operations
-    
-        if (exp[0] === "+"){
-            return this.eval(exp[1], env) + this.eval(exp[2], env);
-        }
-
-        if (exp[0] === "*"){
-            return this.eval(exp[1], env) * this.eval(exp[2], env);
-        }
-
-        if (exp[0] === "-"){
-            return this.eval(exp[1], env) - this.eval(exp[2], env);
-        }
-
-        if (exp[0] === "/"){
-            return this.eval(exp[1], env) / this.eval(exp[2], env);
-        }
-
-        // -----------------------------
-        // compare operations
-        if (exp[0] === ">"){
-            return this.eval(exp[1], env) > this.eval(exp[2], env);
-        }
-
-        if (exp[0] === ">="){
-            return this.eval(exp[1], env) >= this.eval(exp[2], env);
-        }
-
-        if (exp[0] === "<"){
-            return this.eval(exp[1], env) < this.eval(exp[2], env);
-        }
-
-        if (exp[0] === "<="){
-            return this.eval(exp[1], env) <= this.eval(exp[2], env);
-        }
-
-        if (exp[0] === "=="){
-            return this.eval(exp[1], env) == this.eval(exp[2], env);
         }
 
         // -----------------------------
@@ -100,6 +59,21 @@ class Eva {
             return result;
         }
 
+        if (Array.isArray(exp)){
+            const fn = this.eval(exp[0], env);
+            const args = exp
+                    .slice(1)
+                    .map(arg => this.eval(arg, env));
+            let result;
+            if (typeof fn === "function"){
+                result = fn(...args);
+            }
+            
+
+            return result;
+        }
+
+
         throw `Umimplemented: ${JSON.stringify(exp)}`
     }
 
@@ -125,8 +99,62 @@ function isString(exp)
 
 function isVariableName(exp)
 {
-    return typeof exp === "string" && /^[a-zA-Z][a-zA-Z0-9_]*$/.test(exp);
+    return typeof exp === "string" && /^[+\-*/<>=a-zA-Z][+\-*/<>=a-zA-Z0-9_]*$/.test(exp);
 }
 
+
+
+const globalEnv = new Environment({
+    null: null,
+
+    true: true,
+    false: false,
+
+    VERSION: '0.1',
+
+    '+'(op1, op2){
+        return op1 + op2;
+    },
+
+    '-'(op1, op2 = null){
+        if (op2 == null){
+            return -op1;
+        }
+        return op1 - op2;
+    },
+
+    '*'(op1, op2){
+        return op1 * op2;
+    },
+
+    '/'(op1, op2){
+        return op1 / op2;
+    },
+
+    '>'(op1, op2){
+        return op1 > op2;
+    },
+
+    '>='(op1, op2){
+        return op1 >= op2;
+    },
+
+    '<'(op1, op2){
+        return op1 < op2;
+    },
+
+    '<='(op1, op2){
+        return op1 <= op2;
+    },
+
+    '=='(op1, op2){
+        return op1 === op2;
+    },
+
+    'print'(...args){
+        console.log(...args);
+    },
+
+});
 
 module.exports = Eva;
