@@ -1,4 +1,4 @@
-const assert = require("assert");
+
 const Environment = require("./Environment")
 class Eva {
     constructor(global = new Environment()){
@@ -82,64 +82,4 @@ function isVariableName(exp)
 }
 
 
-const env = new Environment({
-    null: null,
-
-    true: true,
-    false: false,
-
-    VERSION: '0.1',
-});
-const eva = new Eva(env);
-
-assert.strictEqual(eva.eval(1), 1);
-assert.strictEqual(eva.eval('"Hello"'), 'Hello');
-assert.strictEqual(eva.eval(["+", 1, 2]), 3);
-assert.strictEqual(eva.eval(["+", ["+", 1, 2], 2]), 5);
-assert.strictEqual(eva.eval(["*", ["+", 1, 2], 2]), 6);
-
-
-assert.strictEqual(eva.eval(["var", "x", 2]), 2);
-assert.strictEqual(eva.eval("x"), 2);
-
-
-assert.strictEqual(eva.eval("VERSION"), "0.1");
-assert.strictEqual(eva.eval(["var", "isUser", "true"]), true);
-
-
-assert.strictEqual(eva.eval([
-    "begin",
-    ["var", "x", 10],
-    ["var", "y", 20],
-    ["+", ["*", "x", "y"], 20]
-]), 220);
-
-assert.strictEqual(eva.eval([
-    "begin",
-    ["var", "x", 10],
-    ["begin", 
-        ["var", "x", 20],
-        "x"
-    ],
-    "x",
-]), 10);
-
-assert.strictEqual(eva.eval([
-    "begin",
-    ["var", "value", 10],
-    ["var", "result", ["begin", 
-        ["var", "x", ["+", "value", 20]],
-    ]],
-    "result",
-]), 30);
-
-assert.strictEqual(eva.eval([
-    "begin",
-    ["var", "data", 10],
-    ["begin", 
-        ["set", "data", 100],
-    ],
-    "data",
-]), 100);
-
-console.log("All assertions passed!")
+module.exports = Eva;
