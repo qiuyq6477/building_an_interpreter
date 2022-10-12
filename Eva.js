@@ -1,8 +1,11 @@
 
 const Environment = require("./Environment")
+const Transformer = require("./transform/Transformer");
+
 class Eva {
     constructor(global = globalEnv){
         this.global = global;
+        this._transformer = new Transformer();
     }
     eval(exp, env = this.global){
         // -----------------------------
@@ -50,6 +53,11 @@ class Eva {
             }
         }
 
+        if (exp[0] === "switch"){
+            const ifExp = this._transformer.transformSwitchToIf(exp);
+            return this.eval(ifExp, env);
+        }
+
         if (exp[0] === "while"){
             const [_tag, condition, body] = exp;
             let result;
@@ -59,11 +67,13 @@ class Eva {
             return result;
         }
 
+        if (exp[0] === "for"){
+            const whileExp = this._transformer.transformForToWhile(exp);
+            return this.eval(whileExp, env);
+        }
+
         if (exp[0] === "def"){
-            const [_tag, name, param, body] = exp
-
-            const varExp = ["var", name, ["lambda", param,  body]];
-
+            const varExp = this._transformer.transformDefToVarLambda(exp);
             return this.eval(varExp, env);
         }
 
@@ -77,6 +87,26 @@ class Eva {
             };
 
             return fn;
+        }
+        
+        if (exp[0] === "++"){
+            const newExp = this._transformer.transformIncToSet(exp);
+            return this.eval(newExp, env);
+        }
+
+        if (exp[0] === "--"){
+            const newExp = this._transformer.transformDecToSet(exp);
+            return this.eval(newExp, env);
+        }
+
+        if (exp[0] === "+="){
+            const newExp = this._transformer.transformIncValToSet(exp);
+            return this.eval(newExp, env);
+        }
+
+        if (exp[0] === "-="){
+            const newExp = this._transformer.transformDecValToSet(exp);
+            return this.eval(newExp, env);
         }
 
         if (Array.isArray(exp)){

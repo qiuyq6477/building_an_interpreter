@@ -12,7 +12,10 @@ const tests = [
     require('./native_function_test'),
     require("./user_defined_function_test"),
     require("./lambda_function_test"),
-    
+    require("./switch_test"),
+    require("./while_test"),
+    require("./inc_test"),
+    require("./inc_var_test"),
 ];
 
 
