@@ -1,0 +1,22 @@
+{
+  "name": "eva",
+  "version": "1.0.0",
+  "description": "ast interpreter",
+  "main": "./bin/eva.js",
+  "bin": {
+    "eva": "eva.js"
+  },
+  "scripts": {
+    "test": "node ./__tests__/run.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/qiuyq6477/building_an_interpreter.git"
+  },
+  "author": "zj",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/qiuyq6477/building_an_interpreter/issues"
+  },
+  "homepage": "https://github.com/qiuyq6477/building_an_interpreter#readme"
+}
