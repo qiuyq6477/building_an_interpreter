@@ -12,6 +12,10 @@ class Environment{
         return value;
     }
 
+    undefine(name){
+        delete this.record[name];
+    }
+    
     lookup(name){
         return this.resolve(name).record[name];
     }

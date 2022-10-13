@@ -1,13 +1,15 @@
 
-const Environment = require("./Environment")
+const Environment = require("./Environment");
 const Transformer = require("./transform/Transformer");
+const evalPaser   = require("./parser/evaParser");
+const fs          = require("fs");
 
 class Eva {
     constructor(global = globalEnv){
         this.global = global;
         this._transformer = new Transformer();
     }
-    
+
     evalGlobal(exp) {
         return this._evalBody(exp, this.global);
     }
@@ -131,6 +133,92 @@ class Eva {
         if (exp[0] === "super"){
             const [_tag, name] = exp;
             return this.eval(name).parent;
+        }
+
+        if (exp[0] === "module"){
+            if (exp.length == 3){
+                const [_tag, name, body] = exp;
+                const moduleEnv = new Environment({}, env);
+                env.define(name, moduleEnv);
+                this._evalBody(body, moduleEnv);
+                return moduleEnv;
+            }
+            if (exp.length == 4){
+                let [_tag, name, exportFuncs, body] = exp;
+                
+                if (body[0] === "exports"){
+                    exportFuncs, body = body, exportFuncs;
+                }
+
+                if (exportFuncs[0] === "exports"){
+                    const tempEnv = new Environment({}, env);
+                    this._evalBody(body, tempEnv);
+                    
+                    const moduleEnv = new Environment({}, env);
+                    env.define(name, moduleEnv);
+
+                    const funcs = exportFuncs.slice(1);
+
+                    for (let i = 0; i < funcs.length; i++){
+                        moduleEnv.define(funcs[i], tempEnv.lookup(funcs[i]));
+                    }
+
+                    return moduleEnv;
+                }
+            }
+        }
+
+        if (exp[0] === "import"){
+            if (exp.length == 2){
+                const [_tag, name] = exp;
+                const content = fs.readFileSync(`./modules/${name}.eva`, "utf-8");
+                let expressions = evalPaser.parse(`(begin ${content})`);
+
+                let i = 0
+                for (; i < expressions.length; i++){
+                    if (expressions[i][0] === "exports"){
+                        break;
+                    }
+                }
+                if (i > 0){
+                    const [exportFuncs] = expressions.splice(i, 1);
+                    expressions = ["module", name, exportFuncs, expressions];
+                }
+                else{
+                    expressions = ["module", name, expressions];
+                }
+                return this.eval(expressions, env);
+            }
+            if (exp.length == 3){
+                const [_tag, props, name] = exp;
+
+                const content = fs.readFileSync(`./modules/${name}.eva`, "utf-8");
+                let expressions = evalPaser.parse(`(begin ${content})`);
+
+                let i = 0
+                for (; i < expressions.length; i++){
+                    if (expressions[i][0] === "exports"){
+                        break;
+                    }
+                }
+                if (i > 0){
+                    const [exportFuncs] = expressions.splice(i, 1);
+                    expressions = ["module", name, exportFuncs, expressions];
+                }
+                else{
+                    expressions = ["module", name, expressions];
+                }
+
+                const mudule = this.eval(expressions, env);
+
+                for (let i = 0; i < props.length; i++){
+                    env.define(props[i], mudule.lookup(props[i]));
+                }
+
+                env.undefine(name);
+
+                return env;
+            }
         }
 
         if (exp[0] === "++"){

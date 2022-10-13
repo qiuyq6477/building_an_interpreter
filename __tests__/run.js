@@ -17,6 +17,8 @@ const tests = [
     require("./inc_test"),
     require("./inc_var_test"),
     require("./class_test"),
+    require("./module_test"),
+    require("./import_test"),
 ];
 
 
