@@ -16,6 +16,7 @@ const tests = [
     require("./while_test"),
     require("./inc_test"),
     require("./inc_var_test"),
+    require("./class_test"),
 ];
 
 

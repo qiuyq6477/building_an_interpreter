@@ -34,8 +34,15 @@ class Eva {
         }
 
         if (exp[0] === "set"){
-            const [_, name, value] = exp;
-            return env.assign(name, this.eval(value, env))
+            const [_, ref, value] = exp;
+
+            if (ref[0] === "prop"){
+                const [_, instance, propName] = ref;
+                const instanceEnv = this.eval(instance, env);
+                return instanceEnv.define(propName, this.eval(value, env));
+            }
+
+            return env.assign(ref, this.eval(value, env))
         }
         // -----------------------------
         // variables lookup
@@ -89,6 +96,33 @@ class Eva {
             return fn;
         }
         
+        if (exp[0] === "class"){
+            const [_tag, name, parent, body] = exp;
+
+            const parentEnv = this.eval(parent, env) || env;
+            const classEnv = new Environment({}, parentEnv);
+
+            env.define(name, classEnv);
+
+            return this._evalBody(body, classEnv);
+        }
+
+        if (exp[0] === "new"){
+            const [_tag, name, ...param] = exp;
+
+            const args = param.map(arg => this.eval(arg, env));
+            const instanceEnv = new Environment({}, this.eval(name, env));
+            this._callUserDefineFunction(instanceEnv.lookup("constructor"), [instanceEnv, ...args]);
+            return instanceEnv;
+        }
+
+        if (exp[0] === "prop"){
+            const [_tag, name, prop] = exp;
+
+            const instance = this.eval(name, env);
+            return instance.lookup(prop);
+        }
+
         if (exp[0] === "++"){
             const newExp = this._transformer.transformIncToSet(exp);
             return this.eval(newExp, env);
@@ -121,19 +155,24 @@ class Eva {
             }
             
             // user-defined-function
-            const activationRecord = {};
-
-            fn.param.forEach((param, index) => {
-                activationRecord[param] = args[index];
-            })
-
-            const activationEnv = new Environment(activationRecord, fn.env); // static scope, if env then dynamic scope
-
-            return this._evalBody(fn.body, activationEnv);
+            return this._callUserDefineFunction(fn, args);
         }
 
 
         throw `Umimplemented: ${JSON.stringify(exp)}`
+    }
+
+    _callUserDefineFunction(fn, args)
+    {
+        const activationRecord = {};
+
+        fn.param.forEach((param, index) => {
+            activationRecord[param] = args[index];
+        })
+
+        const activationEnv = new Environment(activationRecord, fn.env); // static scope, if env then dynamic scope
+
+        return this._evalBody(fn.body, activationEnv);
     }
 
     _evalBody(body, env){
