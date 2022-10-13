@@ -4,7 +4,7 @@ const evaParser = require('../parser/evaParser');
 
 function test(eva, code, expected) {
   const exp = evaParser.parse(`(begin ${code})`);
-  assert.strictEqual(eva.eval(exp), expected);
+  assert.strictEqual(eva.evalGlobal(exp), expected);
 }
 
 module.exports = {

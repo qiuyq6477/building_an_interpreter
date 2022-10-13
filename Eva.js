@@ -7,6 +7,11 @@ class Eva {
         this.global = global;
         this._transformer = new Transformer();
     }
+    
+    evalGlobal(exp) {
+        return this._evalBody(exp, this.global);
+    }
+
     eval(exp, env = this.global){
         // -----------------------------
         // self-evaluating expressions
@@ -121,6 +126,11 @@ class Eva {
 
             const instance = this.eval(name, env);
             return instance.lookup(prop);
+        }
+
+        if (exp[0] === "super"){
+            const [_tag, name] = exp;
+            return this.eval(name).parent;
         }
 
         if (exp[0] === "++"){
